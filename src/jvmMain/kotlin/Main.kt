@@ -16,11 +16,12 @@ fun main(args: Array<String>) {
             } else {
               print("x is not positive")
             }
-            print(a)
+            a+=10
+            a -= 5
+            print(a==20)
           }
         }
     """.trimIndent()
-
     val lexer = Lexer(input)
     val tokens = lexer.scanTokens()
     println(tokens)

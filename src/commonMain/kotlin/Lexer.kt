@@ -26,43 +26,68 @@ class Lexer(private val source: String) {
                 tokens.add(token)
             }
         }
-        tokens.add(Token(TokenType.Eof, "", line))
+        tokens.add(TokenType.Eof())
         return tokens
+    }
+
+    operator fun TokenType.invoke(lexeme: String? = null): Token {
+        return Token(this, lexeme ?: this.lexeme ?: "", line)
     }
 
     private fun scanToken(): Token? {
         return when (val c = advance()) {
-            '+' -> Token(TokenType.Plus, "+", line)
-            '-' -> Token(TokenType.Minus, "-", line)
-            '*' -> Token(TokenType.Times, "*", line)
-            '/' -> Token(TokenType.Divide, "/", line)
+            '+' -> {
+                if (match('=')) TokenType.PlugAssign()
+                else TokenType.Plus()
+            }
+
+            '-' -> {
+                if (match('=')) TokenType.MinusAssign()
+                else TokenType.Minus()
+            }
+
+            '*' -> {
+                if (match('=')) TokenType.TimesAssign()
+                else TokenType.Times()
+            }
+
+            '/' -> {
+                if (match('=')) TokenType.DivideAssign()
+                else TokenType.Divide()
+            }
+
             '=' -> {
-                if (match('=')) Token(TokenType.Eq, "==", line)
-                else Token(TokenType.Assign, "=", line)
+                if (match('=')) TokenType.Eq()
+                else TokenType.Assign()
             }
+
             '!' -> {
-                if (match('=')) Token(TokenType.Neq, "!=", line)
-                else null
+                if (match('=')) TokenType.Neq()
+                else TokenType.Not()
             }
+
             '<' -> {
-                if (match('=')) Token(TokenType.Lte, "<=", line)
-                else Token(TokenType.Lt, "<", line)
+                if (match('=')) TokenType.Lte()
+                else TokenType.Lt()
             }
+
             '>' -> {
-                if (match('=')) Token(TokenType.Gte, ">=", line)
-                else Token(TokenType.Gt, ">", line)
+                if (match('=')) TokenType.Gte()
+                else TokenType.Gt()
             }
-            '(' -> Token(TokenType.LParen, "(", line)
-            ')' -> Token(TokenType.RParen, ")", line)
-            '{' -> Token(TokenType.LBrace, "{", line)
-            '}' -> Token(TokenType.RBrace, "}", line)
-            ',' -> Token(TokenType.Comma, ",", line)
+
+            '(' -> TokenType.LParen()
+            ')' -> TokenType.RParen()
+            '{' -> TokenType.LBrace()
+            '}' -> TokenType.RBrace()
+            ',' -> TokenType.Comma()
             in '0'..'9' -> number()
             in 'a'..'z', in 'A'..'Z', '_' -> identifier()
             '"' -> string()
             '\n' -> {
-                Token(TokenType.NewLine, "\n", line++)
+                TokenType.NewLine()
             }
+
             ' ', '\r', '\t' -> null
             else -> {
                 // Handle unrecognized character
@@ -82,7 +107,7 @@ class Lexer(private val source: String) {
                 advance()
             }
         }
-        return Token(TokenType.Number, source.substring(start, current), line)
+        return TokenType.Number(source.substring(start, current))
     }
 
     private fun identifier(): Token {
@@ -91,8 +116,9 @@ class Lexer(private val source: String) {
         }
         val lexeme = source.substring(start, current)
         val type = keywords[lexeme] ?: TokenType.Identifier
-        return Token(type, lexeme, line)
+        return type(lexeme)
     }
+
 
     private fun string(): Token? {
         while (peek() != '"' && !isAtEnd()) {
@@ -107,7 +133,7 @@ class Lexer(private val source: String) {
         }
         // Consume closing quote
         advance()
-        return Token(TokenType.String, source.substring(start + 1, current - 1), line)
+        return TokenType.String(source.substring(start + 1, current - 1))
     }
 
     private fun isAtEnd(): Boolean {
@@ -130,7 +156,7 @@ class Lexer(private val source: String) {
     }
 
     private fun match(expected: Char): Boolean {
-        if (isAtEnd() || source[current] != expected) {
+        if (isAtEnd() || peek() != expected) {
             return false
         }
         current++
