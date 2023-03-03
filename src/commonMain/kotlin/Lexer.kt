@@ -9,7 +9,6 @@ val keywords = mapOf(
     "for" to TokenType.For,
     "val" to TokenType.Val,
     "var" to TokenType.Var,
-    "const" to TokenType.Const,
 )
 
 class Lexer(private val source: String) {

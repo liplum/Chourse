@@ -10,7 +10,7 @@ fun main(args: Array<String>) {
     val input = """
         class A {
           fun test(b: Int){
-            val a = 10
+            var a = 10
             if (x > 0) {
               print("x is positive")
             } else {

@@ -4,7 +4,7 @@ enum class TokenType(
     val lexeme: kotlin.String? = null
 ) {
     // Keywords
-    Fun("fun"), Class("class"), If("if"), Else("else"), While("while"), For("for"), Val("val"), Var("var"), Const("const"),
+    Fun("fun"), Class("class"), If("if"), Else("else"), While("while"), For("for"), Val("val"), Var("var"),
 
     // Operators
     Plus("+"), Minus("-"), Times("*"), Divide("/"), Modulo("%"),
