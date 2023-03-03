@@ -30,49 +30,74 @@ class Lexer(private val source: String) {
         return tokens
     }
 
-    operator fun TokenType.invoke(lexeme: String? = null): Token {
-        return Token(this, lexeme ?: this.lexeme ?: "", line)
+    operator fun TokenType.invoke(
+        lexeme: String = this.lexeme ?: "",
+        line: Int = this@Lexer.line
+    ): Token {
+        return Token(this, lexeme, line)
     }
 
     private fun scanToken(): Token? {
         return when (val c = advance()) {
             '+' -> {
-                if (match('=')) TokenType.PlugAssign()
+                if (ifNext('=')) TokenType.PlugAssign()
                 else TokenType.Plus()
             }
 
             '-' -> {
-                if (match('=')) TokenType.MinusAssign()
+                if (ifNext('=')) TokenType.MinusAssign()
                 else TokenType.Minus()
             }
 
             '*' -> {
-                if (match('=')) TokenType.TimesAssign()
+                if (ifNext('=')) TokenType.TimesAssign()
                 else TokenType.Times()
             }
 
             '/' -> {
-                if (match('=')) TokenType.DivideAssign()
+                if (ifNext('=')) TokenType.DivideAssign()
                 else TokenType.Divide()
             }
 
+            '%' -> {
+                if (ifNext('=')) TokenType.ModuloAssign()
+                else TokenType.Modulo()
+            }
+
+            '&' -> {
+                if (ifNext('&')) TokenType.And()
+                else if (ifNext('=')) TokenType.BitAndAssign()
+                else TokenType.BitAnd()
+            }
+
+            '|' -> {
+                if (ifNext('|')) TokenType.Or()
+                else if (ifNext('=')) TokenType.BitOrAssign()
+                else TokenType.BitOr()
+            }
+
+            '^' -> {
+                if (ifNext('=')) TokenType.BitXorAssign()
+                else TokenType.BitXor()
+            }
+
             '=' -> {
-                if (match('=')) TokenType.Eq()
+                if (ifNext('=')) TokenType.Eq()
                 else TokenType.Assign()
             }
 
             '!' -> {
-                if (match('=')) TokenType.Neq()
+                if (ifNext('=')) TokenType.Neq()
                 else TokenType.Not()
             }
 
             '<' -> {
-                if (match('=')) TokenType.Lte()
+                if (ifNext('=')) TokenType.Lte()
                 else TokenType.Lt()
             }
 
             '>' -> {
-                if (match('=')) TokenType.Gte()
+                if (ifNext('=')) TokenType.Gte()
                 else TokenType.Gt()
             }
 
@@ -81,11 +106,13 @@ class Lexer(private val source: String) {
             '{' -> TokenType.LBrace()
             '}' -> TokenType.RBrace()
             ',' -> TokenType.Comma()
+            ':' -> TokenType.Colon()
+            '.' -> TokenType.Dot()
             in '0'..'9' -> number()
             in 'a'..'z', in 'A'..'Z', '_' -> identifier()
             '"' -> string()
             '\n' -> {
-                TokenType.NewLine()
+                TokenType.NewLine(line = line++)
             }
 
             ' ', '\r', '\t' -> null
@@ -155,7 +182,7 @@ class Lexer(private val source: String) {
         else source[current + 1]
     }
 
-    private fun match(expected: Char): Boolean {
+    private fun ifNext(expected: Char): Boolean {
         if (isAtEnd() || peek() != expected) {
             return false
         }

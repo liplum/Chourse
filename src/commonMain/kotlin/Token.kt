@@ -9,13 +9,17 @@ enum class TokenType(
     // Operators
     Plus("+"), Minus("-"), Times("*"), Divide("/"), Modulo("%"),
 
+    // Bitwise
+    BitAnd("&"), BitOr("|"), BitXor("^"),
+
     // Assignments
     Assign("="), PlugAssign("+="), MinusAssign("-="), TimesAssign("*="), DivideAssign("/="), ModuloAssign("%="),
+    BitAndAssign("&="), BitOrAssign("|="), BitXorAssign("^="),
 
     // Comparison
     Lt("<"), Gt(">"), Lte("<="), Gte(">="), Eq("=="), Neq("!="),
     LParen("("), RParen(")"), LBrace("{"), RBrace("}"), Comma(","),
-    Dot("."),
+    Dot("."), Colon(":"),
 
     // Logic
     Not("!"), And("&&"), Or("||"),

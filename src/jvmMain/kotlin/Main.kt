@@ -9,7 +9,7 @@ fun main(args: Array<String>) {
     println("Program arguments: ${args.joinToString()}")
     val input = """
         class A {
-          fun test(){
+          fun test(b: Int){
             val a = 10
             if (x > 0) {
               print("x is positive")
@@ -18,7 +18,7 @@ fun main(args: Array<String>) {
             }
             a+=10
             a -= 5
-            print(a==20)
+            print(a==b)
           }
         }
     """.trimIndent()
