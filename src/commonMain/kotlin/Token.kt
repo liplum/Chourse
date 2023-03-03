@@ -2,7 +2,7 @@ package net.liplum.chourse
 
 enum class TokenType {
     // Keywords
-    Fun, Class, If, Else, While, For,
+    Fun, Class, If, Else, While, For, Val, Var, Const,
 
     // Operators
     Plus, Minus, Times, Divide, Assign, Eq, Neq, Lt, Gt, Lte, Gte,
@@ -28,6 +28,7 @@ fun List<Token>.antiLexer(): String {
                 b.append(token.lexeme)
                 b.append('"')
             }
+
             else -> b.append(token.lexeme)
         }
         b.append(" ")

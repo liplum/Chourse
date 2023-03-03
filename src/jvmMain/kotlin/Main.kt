@@ -10,11 +10,13 @@ fun main(args: Array<String>) {
     val input = """
         class A {
           fun test(){
+            val a = 10
             if (x > 0) {
               print("x is positive")
             } else {
               print("x is not positive")
             }
+            print(a)
           }
         }
     """.trimIndent()

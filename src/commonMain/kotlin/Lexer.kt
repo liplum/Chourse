@@ -7,6 +7,9 @@ val keywords = mapOf(
     "else" to TokenType.Else,
     "while" to TokenType.While,
     "for" to TokenType.For,
+    "val" to TokenType.Val,
+    "var" to TokenType.Var,
+    "const" to TokenType.Const,
 )
 
 class Lexer(private val source: String) {
@@ -37,22 +40,18 @@ class Lexer(private val source: String) {
                 if (match('=')) Token(TokenType.Eq, "==", line)
                 else Token(TokenType.Assign, "=", line)
             }
-
             '!' -> {
                 if (match('=')) Token(TokenType.Neq, "!=", line)
                 else null
             }
-
             '<' -> {
                 if (match('=')) Token(TokenType.Lte, "<=", line)
                 else Token(TokenType.Lt, "<", line)
             }
-
             '>' -> {
                 if (match('=')) Token(TokenType.Gte, ">=", line)
                 else Token(TokenType.Gt, ">", line)
             }
-
             '(' -> Token(TokenType.LParen, "(", line)
             ')' -> Token(TokenType.RParen, ")", line)
             '{' -> Token(TokenType.LBrace, "{", line)
@@ -64,7 +63,6 @@ class Lexer(private val source: String) {
             '\n' -> {
                 Token(TokenType.NewLine, "\n", line++)
             }
-
             ' ', '\r', '\t' -> null
             else -> {
                 // Handle unrecognized character
