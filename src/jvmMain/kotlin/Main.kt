@@ -34,11 +34,11 @@ fun main(args: Array<String>) {
     val result = parser.parseProgram()
     println(result)
     println("-----------")
-    val toSource = ToSourceVisitor()
-    val sources = StringBuilder()
+    val source = StringBuilder()
+    val toSource = ToSourceVisitor(source)
     for (stmt in result) {
-        sources.append(stmt.accept(toSource))
-        sources.append("\n")
+        stmt.accept(toSource)
+        source.append("\n")
     }
-    println(sources)
+    println(source)
 }

@@ -10,7 +10,7 @@ interface Visitor<R> {
     fun visitExpr(stmt: ExprStmt): R
     fun visitIf(stmt: IfStmt): R
     fun visitVarDecl(stmt: VarDecl): R
-    fun visitFuncDecl(stmt: FuncDecl): R
+    fun visitFunDecl(stmt: FuncDecl): R
     fun visitClassDecl(stmt: ClassDecl): R
     fun visitWhile(stmt: WhileStmt): R
     fun visitContinue(stmt: ContinueStmt): R

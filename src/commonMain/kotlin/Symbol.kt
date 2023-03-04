@@ -140,7 +140,7 @@ data class FuncDecl(
     val body: BlockStmt
 ) : Stmt {
     override fun <R> accept(visitor: Visitor<R>): R {
-        return visitor.visitFuncDecl(this)
+        return visitor.visitFunDecl(this)
     }
 }
 
