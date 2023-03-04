@@ -12,16 +12,19 @@ enum class TokenType(
 
     // Bitwise
     BitAnd("&"), BitOr("|"), BitXor("^"),
-    LShift("<<"), RShift(">>"),
+    LShift("<<"), RShift(">>"), Tilde("~"),
 
     // Assignments
     Assign("="), PlusAssign("+="), MinusAssign("-="), TimesAssign("*="), DivideAssign("/="), ModuloAssign("%="),
     BitAndAssign("&="), BitOrAssign("|="), BitXorAssign("^="),
+    LShiftAssign("<<="), RShiftAssign(">>="),
 
     // Comparison
     Lt("<"), Gt(">"), Lte("<="), Gte(">="), Eq("=="), Neq("!="),
     LParen("("), RParen(")"), LBrace("{"), RBrace("}"), Comma(","),
-    Dot("."), Colon(":"),
+
+    // Special
+    Dot("."), Colon(":"), LIndex("["), RIndex("]"),
 
     // Logic
     Not("!"), And("&&"), Or("||"),

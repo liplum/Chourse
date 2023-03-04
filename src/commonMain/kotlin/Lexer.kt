@@ -83,6 +83,8 @@ class Lexer(private val source: String) {
                 else TokenType.BitXor()
             }
 
+            '~' -> TokenType.Tilde()
+
             '=' -> {
                 if (tryConsume('=')) TokenType.Eq()
                 else TokenType.Assign()
@@ -93,13 +95,24 @@ class Lexer(private val source: String) {
                 else TokenType.Not()
             }
 
+
             '<' -> {
-                if (tryConsume('=')) TokenType.Lte()
+                if (tryConsume('>'))
+                    if (tryConsume('='))
+                        TokenType.LShiftAssign()
+                    else
+                        TokenType.LShift()
+                else if (tryConsume('=')) TokenType.Lte()
                 else TokenType.Lt()
             }
 
             '>' -> {
-                if (tryConsume('=')) TokenType.Gte()
+                if (tryConsume('>'))
+                    if (tryConsume('='))
+                        TokenType.RShiftAssign()
+                    else
+                        TokenType.RShift()
+                else if (tryConsume('=')) TokenType.Gte()
                 else TokenType.Gt()
             }
 
@@ -107,6 +120,8 @@ class Lexer(private val source: String) {
             ')' -> TokenType.RParen()
             '{' -> TokenType.LBrace()
             '}' -> TokenType.RBrace()
+            '[' -> TokenType.LIndex()
+            ']' -> TokenType.RIndex()
             ',' -> TokenType.Comma()
             ':' -> TokenType.Colon()
             '.' -> TokenType.Dot()
