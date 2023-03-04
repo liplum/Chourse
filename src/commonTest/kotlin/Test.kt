@@ -30,6 +30,15 @@ class Test {
           fun labeled(){
             return@lable1
           }
+          
+          fun testLoop(){
+            while(true){
+              break
+            }
+            while(true){
+              break@point
+            }
+          }
         }
     """.trimIndent()
         val lexer = Lexer(input)

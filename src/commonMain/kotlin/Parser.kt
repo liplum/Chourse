@@ -198,8 +198,7 @@ class Parser(private val tokens: List<Token>) {
         consume(TokenType.Break) {
             "Expect the \"break\" keyword."
         }
-        val label = if (match(TokenType.NewLine)) tryConsume(TokenType.Label)
-        else null
+        val label = tryConsume(TokenType.Label)
         consume(TokenType.NewLine) {
             if (label == null)
                 "Expect newline after \"break\" keyword."
@@ -213,8 +212,7 @@ class Parser(private val tokens: List<Token>) {
         consume(TokenType.Continue) {
             "Expect the \"continue\" keyword."
         }
-        val label = if (match(TokenType.NewLine)) tryConsume(TokenType.Label)
-        else null
+        val label = tryConsume(TokenType.Label)
         consume(TokenType.NewLine) {
             if (label == null)
                 "Expect newline after \"continue\" keyword."
