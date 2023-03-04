@@ -13,8 +13,11 @@ val keywords = mapOf(
     "break" to TokenType.Break,
     "continue" to TokenType.Continue,
 )
-fun Char.isValidIdentifier() = isLetterOrDigit() || this == '_'
 
+fun Char.isValidIdentifier() = isLetterOrDigit() || this == '_'
+/**
+ * `return`, `break` and `continue` allow label.
+ */
 class Lexer(private val source: String) {
     private var start = 0
     private var current = 0
@@ -173,9 +176,8 @@ class Lexer(private val source: String) {
         while (peek().isValidIdentifier()) {
             advance()
         }
-        val lexeme = source.substring(start, current)
-        val type = keywords[lexeme] ?: TokenType.Identifier
-        return type(lexeme)
+        val lexeme = source.substring(start + 1, current)
+        return TokenType.Label(lexeme)
     }
 
     private fun skipComment() {

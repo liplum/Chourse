@@ -182,6 +182,7 @@ class Parser(private val tokens: List<Token>) {
         consume(TokenType.Return) {
             "Expect the \"return\" keyword."
         }
+        val label = tryConsume(TokenType.Label)
         val returnValue = if (match(TokenType.NewLine)) null
         else parseExpression()
         consume(TokenType.NewLine) {
@@ -190,7 +191,7 @@ class Parser(private val tokens: List<Token>) {
             else
                 "Expect newline after return value."
         }
-        return ReturnStmt(returnValue)
+        return ReturnStmt(label?.lexeme, returnValue)
     }
 
     private fun parseBreak(): Stmt {

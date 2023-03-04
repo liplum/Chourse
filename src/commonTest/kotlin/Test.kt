@@ -26,6 +26,10 @@ class Test {
           fun add(a:Int,b:Int){
             return a+b
           }
+          
+          fun labeled(){
+            return@lable1
+          }
         }
     """.trimIndent()
         val lexer = Lexer(input)

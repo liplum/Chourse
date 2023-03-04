@@ -108,7 +108,7 @@ data class ContinueStmt(val label: String?) : Stmt {
     }
 }
 
-data class ReturnStmt(val expr: Expr?) : Stmt {
+data class ReturnStmt(val label:String?,val expr: Expr?) : Stmt {
     override fun <R> accept(visitor: Visitor<R>): R {
         return visitor.visitReturn(this)
     }
