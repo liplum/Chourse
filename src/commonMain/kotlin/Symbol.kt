@@ -12,31 +12,31 @@ sealed interface Literal : Expr {
 
 data class BinaryExpr(val left: Expr, val operator: String, val right: Expr) : Expr {
     override fun <R> accept(visitor: Visitor<R>): R {
-        return visitor.visitBinary(this)
+        return visitor.visitBinaryExpr(this)
     }
 }
 
 data class UnaryExpr(val operator: String, val right: Expr) : Expr {
     override fun <R> accept(visitor: Visitor<R>): R {
-        return visitor.visitUnary(this)
+        return visitor.visitUnaryExpr(this)
     }
 }
 
 data class IntegerLiteral(override val value: Int) : Literal {
     override fun <R> accept(visitor: Visitor<R>): R {
-        return visitor.visitLiteral(this)
+        return visitor.visitLiteralExpr(this)
     }
 }
 
 data class DoubleLiteral(override val value: Double) : Literal {
     override fun <R> accept(visitor: Visitor<R>): R {
-        return visitor.visitLiteral(this)
+        return visitor.visitLiteralExpr(this)
     }
 }
 
 data class StringLiteral(override val value: String) : Literal {
     override fun <R> accept(visitor: Visitor<R>): R {
-        return visitor.visitLiteral(this)
+        return visitor.visitLiteralExpr(this)
     }
 }
 
@@ -45,20 +45,20 @@ object NullLiteralExpr : Literal {
     override val value = null
 
     override fun <R> accept(visitor: Visitor<R>): R {
-        return visitor.visitLiteral(this)
+        return visitor.visitLiteralExpr(this)
     }
 }
 
 
 data class VariableExpr(val name: String) : Expr {
     override fun <R> accept(visitor: Visitor<R>): R {
-        return visitor.visitVar(this)
+        return visitor.visitVarExpr(this)
     }
 }
 
 data class CallExpr(val name: String, val arguments: List<Expr>) : Expr {
     override fun <R> accept(visitor: Visitor<R>): R {
-        return visitor.visitCall(this)
+        return visitor.visitCallExpr(this)
     }
 }
 
@@ -67,13 +67,13 @@ sealed interface Stmt : Symbol
 
 data class ExprStmt(val expr: Expr) : Stmt {
     override fun <R> accept(visitor: Visitor<R>): R {
-        return visitor.visitExpr(this)
+        return visitor.visitExprStmt(this)
     }
 }
 
 data class BlockStmt(val stmts: List<Stmt>) : Stmt {
     override fun <R> accept(visitor: Visitor<R>): R {
-        return visitor.visitBlock(this)
+        return visitor.visitBlockStmt(this)
     }
 }
 
@@ -83,7 +83,7 @@ data class IfStmt(
     val elseStmt: Stmt?,
 ) : Stmt {
     override fun <R> accept(visitor: Visitor<R>): R {
-        return visitor.visitIf(this)
+        return visitor.visitIfStmt(this)
     }
 }
 
@@ -92,25 +92,25 @@ data class WhileStmt(
     val body: Stmt,
 ) : Stmt {
     override fun <R> accept(visitor: Visitor<R>): R {
-        return visitor.visitWhile(this)
+        return visitor.visitWhileStmt(this)
     }
 }
 
 data class BreakStmt(val label: String?) : Stmt {
     override fun <R> accept(visitor: Visitor<R>): R {
-        return visitor.visitBreak(this)
+        return visitor.visitBreakStmt(this)
     }
 }
 
 data class ContinueStmt(val label: String?) : Stmt {
     override fun <R> accept(visitor: Visitor<R>): R {
-        return visitor.visitContinue(this)
+        return visitor.visitContinueStmt(this)
     }
 }
 
-data class ReturnStmt(val label:String?,val expr: Expr?) : Stmt {
+data class ReturnStmt(val label: String?, val expr: Expr?) : Stmt {
     override fun <R> accept(visitor: Visitor<R>): R {
-        return visitor.visitReturn(this)
+        return visitor.visitReturnStmt(this)
     }
 }
 

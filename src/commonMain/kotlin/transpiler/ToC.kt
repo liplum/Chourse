@@ -5,7 +5,7 @@ import net.liplum.chourse.*
 class ToC89Visitor(
     val builder: StringBuilder = StringBuilder()
 ) : Visitor<Unit> {
-    override fun visitLiteral(literal: Literal) {
+    override fun visitLiteralExpr(literal: Literal) {
         when (literal) {
             is StringLiteral -> {
                 builder.append('\"')
@@ -18,22 +18,22 @@ class ToC89Visitor(
         }
     }
 
-    override fun visitUnary(expr: UnaryExpr) {
+    override fun visitUnaryExpr(expr: UnaryExpr) {
         builder.append(expr.operator)
         expr.right.accept(this)
     }
 
-    override fun visitBinary(expr: BinaryExpr) {
+    override fun visitBinaryExpr(expr: BinaryExpr) {
         expr.left.accept(this)
         builder.append(expr.operator)
         expr.right.accept(this)
     }
 
-    override fun visitVar(expr: VariableExpr) {
+    override fun visitVarExpr(expr: VariableExpr) {
         builder.append(expr.name)
     }
 
-    override fun visitCall(expr: CallExpr) {
+    override fun visitCallExpr(expr: CallExpr) {
         builder.append(expr.name)
         builder.append('(')
         for ((i, arg) in expr.arguments.withIndex()) {
@@ -45,7 +45,7 @@ class ToC89Visitor(
         builder.append(')')
     }
 
-    override fun visitBlock(stmt: BlockStmt) {
+    override fun visitBlockStmt(stmt: BlockStmt) {
         builder.append("{")
         for (sub in stmt.stmts) {
             sub.accept(this)
@@ -53,12 +53,12 @@ class ToC89Visitor(
         builder.append("}")
     }
 
-    override fun visitExpr(stmt: ExprStmt) {
+    override fun visitExprStmt(stmt: ExprStmt) {
         stmt.expr.accept(this)
         builder.append(';')
     }
 
-    override fun visitIf(stmt: IfStmt) {
+    override fun visitIfStmt(stmt: IfStmt) {
         builder.append("if(")
         stmt.condition.accept(this)
         builder.append(")")
@@ -100,14 +100,14 @@ class ToC89Visitor(
         stmt.body.accept(this)
     }
 
-    override fun visitWhile(stmt: WhileStmt) {
+    override fun visitWhileStmt(stmt: WhileStmt) {
         builder.append("while(")
         stmt.condition.accept(this)
         builder.append(')')
         stmt.body.accept(this)
     }
 
-    override fun visitContinue(stmt: ContinueStmt) {
+    override fun visitContinueStmt(stmt: ContinueStmt) {
         builder.append("continue")
         if (stmt.label != null) {
             builder.append(' ')
@@ -115,7 +115,7 @@ class ToC89Visitor(
         }
     }
 
-    override fun visitBreak(stmt: BreakStmt) {
+    override fun visitBreakStmt(stmt: BreakStmt) {
         builder.append("break")
         if (stmt.label != null) {
             builder.append(' ')
@@ -123,7 +123,7 @@ class ToC89Visitor(
         }
     }
 
-    override fun visitReturn(stmt: ReturnStmt) {
+    override fun visitReturnStmt(stmt: ReturnStmt) {
         builder.append("return")
         if (stmt.expr != null) {
             builder.append(' ')

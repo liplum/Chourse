@@ -158,6 +158,18 @@ class Parser(private val tokens: List<Token>) {
         return statements
     }
 
+    private fun parseStatementUntilNext(
+        errorMessage: () -> String = { "" }
+    ): Stmt {
+        while (!isAtEnd()) {
+            val stmt = parseStatement()
+            if (stmt != null) {
+                return stmt
+            }
+        }
+        throw ParserException(peek(), errorMessage())
+    }
+
     private fun parseStatement(): Stmt? {
         return when {
             match(TokenType.NewLine) -> {
@@ -244,9 +256,14 @@ class Parser(private val tokens: List<Token>) {
         consume(TokenType.Class) {
             "Expect the \"class\" keyword."
         }
-        val className = consume(TokenType.Identifier)
+        val className = consume(TokenType.Identifier) {
+            "Expect a class name."
+
+        }
         val superclass = if (match(TokenType.Colon)) {
-            consume(TokenType.Identifier).lexeme
+            consume(TokenType.Identifier) {
+                "Expect a super class name"
+            }.lexeme
         } else {
             null
         }
@@ -255,13 +272,23 @@ class Parser(private val tokens: List<Token>) {
     }
 
     private fun parseIfStatement(): Stmt {
-        consume(TokenType.If)
-        consume(TokenType.LParen)
+        consume(TokenType.If) {
+            "Expect the \"if\" keyword."
+        }
+        consume(TokenType.LParen) {
+            "Expect a '(' after \"if\"."
+        }
         val condition = parseExpression()
-        consume(TokenType.RParen)
-        val thenBranch = parseStatement()!!
+        consume(TokenType.RParen) {
+            "Expect a ')' after \"if\"."
+        }
+        val thenBranch = parseStatementUntilNext{
+            "Expect a statement or block after \"if\"."
+        }
         val elseBranch = if (tryConsume(TokenType.Else) != null) {
-            parseStatement()
+            parseStatementUntilNext{
+                "Expect a statement or block after \"else\"."
+            }
         } else {
             null
         }
@@ -269,10 +296,16 @@ class Parser(private val tokens: List<Token>) {
     }
 
     private fun parseWhileStatement(): Stmt {
-        consume(TokenType.While)
-        consume(TokenType.LParen)
+        consume(TokenType.While) {
+            "Expect the \"while\" keyword."
+        }
+        consume(TokenType.LParen) {
+            "Expect a '(' after \"while\"."
+        }
         val condition = parseExpression()
-        consume(TokenType.RParen)
+        consume(TokenType.RParen) {
+            "Expect a ')' after \"while \"."
+        }
         val body = parseStatement()!!
         return WhileStmt(condition, body)
     }
@@ -284,7 +317,9 @@ class Parser(private val tokens: List<Token>) {
         } else {
             consume(TokenType.Var)
         }
-        val name = consume(TokenType.Identifier)
+        val name = consume(TokenType.Identifier) {
+            "Expect a variable name."
+        }
         val initializer = if (match(TokenType.Assign)) {
             consume(TokenType.Assign)
             parseExpression()
@@ -296,7 +331,9 @@ class Parser(private val tokens: List<Token>) {
     }
 
     private fun parseBlockStatement(): BlockStmt {
-        consume(TokenType.LBrace)
+        consume(TokenType.LBrace) {
+            "Expect a '{' "
+        }
         val stmts = mutableListOf<Stmt>()
         while (!match(TokenType.RBrace) && !isAtEnd()) {
             val stmt = parseStatement()

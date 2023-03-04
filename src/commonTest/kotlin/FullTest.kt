@@ -5,7 +5,7 @@ import net.liplum.chourse.transpiler.ToC89Visitor
 import net.liplum.chourse.transpiler.ToSourceVisitor
 import kotlin.test.Test
 
-class Test {
+class FullTest {
     @Test
     fun `test lexer`() {
         val input = """
@@ -56,19 +56,17 @@ class Test {
             val toSource = ToSourceVisitor(source)
             for (stmt in result) {
                 stmt.accept(toSource)
-                source.append("\n")
             }
             println(source)
         }
-        println("-----------")
+/*        println("-----------")
         run {
             val source = StringBuilder()
             val toSource = ToC89Visitor(source)
             for (stmt in result) {
                 stmt.accept(toSource)
-                source.append("\n")
             }
             println(source)
-        }
+        }*/
     }
 }
