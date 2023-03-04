@@ -1,6 +1,7 @@
 import net.liplum.chourse.Lexer
 import net.liplum.chourse.Parser
 import net.liplum.chourse.antiLexer
+import net.liplum.chourse.transpiler.ToSourceVisitor
 
 fun main(args: Array<String>) {
     println("Hello World!")
@@ -32,4 +33,12 @@ fun main(args: Array<String>) {
     val parser = Parser(tokens)
     val result = parser.parseProgram()
     println(result)
+    println("-----------")
+    val toSource = ToSourceVisitor()
+    val sources = StringBuilder()
+    for (stmt in result) {
+        sources.append(stmt.accept(toSource))
+        sources.append("\n")
+    }
+    println(sources)
 }

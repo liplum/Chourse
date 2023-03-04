@@ -255,7 +255,7 @@ class Parser(private val tokens: List<Token>) {
         } else {
             null
         }
-        return VarDecl(name.lexeme, initializer)
+        return VarDecl(name.lexeme, isImmutable, initializer)
 
     }
 
