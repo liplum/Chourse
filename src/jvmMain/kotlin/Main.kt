@@ -1,6 +1,7 @@
 import net.liplum.chourse.Lexer
 import net.liplum.chourse.Parser
 import net.liplum.chourse.antiLexer
+import net.liplum.chourse.transpiler.ToC89Visitor
 import net.liplum.chourse.transpiler.ToSourceVisitor
 
 fun main(args: Array<String>) {
@@ -34,11 +35,23 @@ fun main(args: Array<String>) {
     val result = parser.parseProgram()
     println(result)
     println("-----------")
-    val source = StringBuilder()
-    val toSource = ToSourceVisitor(source)
-    for (stmt in result) {
-        stmt.accept(toSource)
-        source.append("\n")
+    run {
+        val source = StringBuilder()
+        val toSource = ToSourceVisitor(source)
+        for (stmt in result) {
+            stmt.accept(toSource)
+            source.append("\n")
+        }
+        println(source)
     }
-    println(source)
+    println("-----------")
+    run {
+        val source = StringBuilder()
+        val toSource = ToC89Visitor(source)
+        for (stmt in result) {
+            stmt.accept(toSource)
+            source.append("\n")
+        }
+        println(source)
+    }
 }

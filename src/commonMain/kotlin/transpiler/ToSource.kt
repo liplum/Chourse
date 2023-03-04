@@ -126,7 +126,7 @@ class ToSourceVisitor(
     }
 
     override fun visitReturn(stmt: ReturnStmt) {
-        builder.append("break")
+        builder.append("return")
         if (stmt.expr != null) {
             builder.append(' ')
             stmt.expr.accept(this)
