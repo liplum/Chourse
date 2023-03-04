@@ -1,18 +1,45 @@
 package net.liplum.chourse
 
-class ParserException(message: String? = null) : Exception(message)
+class ParserException(message: String?) : Exception(message) {
+    constructor(token: Token, message: String? = null) : this(
+        if (token.type == TokenType.Eof) {
+            "[line ${token.line}] Error at end: $message"
+        } else {
+            val lexeme = if (token.lexeme == "\n") "\\n" else token.lexeme
+            "[line ${token.line}] Error at \"${lexeme}\": $message"
+        }
+    )
+}
+
 class Parser(private val tokens: List<Token>) {
     private var current = 0
     private val currentToken get() = tokens[current]
     private val restTokens get() = tokens.subList(current, tokens.size)
     private val operatorPrecedence = mapOf(
-        "||" to 1, "&&" to 2,
-        "|" to 3, "&" to 4,
-        "==" to 5, "!=" to 5,
-        "<" to 6, ">" to 6, "<=" to 6, ">=" to 6,
-        "<<" to 7, ">>" to 7,
-        "+" to 8, "-" to 8,
-        "*" to 9, "/" to 9
+        TokenType.LParen to 0,
+        TokenType.RParen to 0,
+        TokenType.Not to 1, // logical not
+        TokenType.Eq to 1,
+        TokenType.Neq to 1,
+        TokenType.Lt to 2,
+        TokenType.Lte to 2,
+        TokenType.Gt to 2,
+        TokenType.Gte to 2,
+        TokenType.Plus to 3,
+        TokenType.Minus to 3,
+        TokenType.Times to 4,
+        TokenType.Divide to 4,
+        TokenType.And to 5,
+        TokenType.Or to 6,
+        TokenType.MinusAssign to 7,
+        TokenType.PlusAssign to 7,
+        TokenType.TimesAssign to 7,
+        TokenType.DivideAssign to 7,
+        TokenType.MinusAssign to 7,
+        TokenType.BitXorAssign to 7,
+        TokenType.BitOrAssign to 7,
+        TokenType.BitAndAssign to 7,
+        TokenType.Assign to 7,
     )
 
     private fun match(vararg types: TokenType): Boolean {
@@ -31,12 +58,15 @@ class Parser(private val tokens: List<Token>) {
         return false
     }
 
-    private fun match(cat: TokenTypeCat): Boolean {
-        if (check(cat)) {
-            return true
+    private fun match(types: List<TokenType>): Boolean {
+        for (type in types) {
+            if (check(type)) {
+                return true
+            }
         }
         return false
     }
+
 
     private fun consume(vararg types: TokenType, msg: (() -> String) = { "" }): Token {
         for (type in types) {
@@ -44,20 +74,31 @@ class Parser(private val tokens: List<Token>) {
                 return advance()
             }
         }
-        error(peek(), msg())
-        throw ParserException()
+        throw ParserException(peek(), msg())
     }
 
-    private fun consume(msg: (() -> String) = { "" }): Token {
-        return advance()
+    private fun consume(types: List<TokenType>, msg: (() -> String) = { "" }): Token {
+        for (type in types) {
+            if (check(type)) {
+                return advance()
+            }
+        }
+        throw ParserException(peek(), msg())
     }
 
-    private fun consume(type: TokenType, msg: (() -> String) = { "" }): Token {
+    private fun consume(errorMessage: (() -> String) = { "" }): Token {
+        val next = advance()
+        if (next.type == TokenType.Eof) {
+            throw ParserException(peek(), errorMessage())
+        }
+        return next
+    }
+
+    private fun consume(type: TokenType, errorMessage: (() -> String) = { "" }): Token {
         if (check(type)) {
             return advance()
         }
-        error(peek(), msg())
-        throw ParserException()
+        throw ParserException(peek(), errorMessage())
     }
 
     private fun tryConsume(vararg types: TokenType): Boolean {
@@ -85,13 +126,6 @@ class Parser(private val tokens: List<Token>) {
         return peek().type == type
     }
 
-    private fun check(cat: TokenTypeCat): Boolean {
-        if (isAtEnd()) {
-            return false
-        }
-        return peek().type.cat == cat
-    }
-
     private fun advance(): Token {
         if (!isAtEnd()) {
             current++
@@ -109,15 +143,6 @@ class Parser(private val tokens: List<Token>) {
 
     private fun previous(): Token {
         return tokens[current - 1]
-    }
-
-    private fun error(token: Token, message: String? = null) {
-        if (token.type == TokenType.Eof) {
-            println("[line ${token.line}] Error at end: $message")
-        } else {
-            println("[line ${token.line}] Error at end: $message")
-            println("[line ${token.line}] Error${token.lexeme}: $message")
-        }
     }
 
     fun parseProgram(): List<Stmt> {
@@ -236,7 +261,9 @@ class Parser(private val tokens: List<Token>) {
 
     private fun parseExpressionStatement(): Stmt {
         val expression = parseExpression()
-        consume(TokenType.NewLine)
+        consume(TokenType.NewLine) {
+            "Expect a new line after expression statement."
+        }
         return ExpressionStmt(expression)
     }
 
@@ -260,19 +287,46 @@ class Parser(private val tokens: List<Token>) {
         return parameters
     }
 
+
     private fun parseExpression(): Expr {
-        return parseAssignment()
+        var left = parsePrimary()
+
+        while (true) {
+            val operator = peek()
+            val precedence = operatorPrecedence[operator.type] ?: 0
+
+            if (precedence == 0) break
+
+            advance()
+
+            var right = parsePrimary()
+
+            while (true) {
+                val curOperator = peek()
+                val currentPrecedence = operatorPrecedence[curOperator.type] ?: 0
+
+                if (precedence >= currentPrecedence) {
+                    break
+                }
+                val nextOperator = peek()
+                advance()
+                right = BinaryExpr(right, nextOperator.lexeme, parsePrimary())
+            }
+
+            left = BinaryExpr(left, operator.lexeme, right)
+        }
+        return left
     }
 
     private fun parseAssignment(): Expr {
         val left = parseLogicalOr()
-        if (match(TokenTypeCat.Assign)) {
+        if (match(TokenType.assigns)) {
             consume()
             val right = parseAssignment()
             return if (left is VariableExpr) {
                 AssignmentExpr(left.name, right)
             } else {
-                throw ParserException("Invalid assignment target")
+                throw ParserException(peek(), "Invalid assignment target")
             }
         }
         return left
@@ -283,7 +337,7 @@ class Parser(private val tokens: List<Token>) {
         while (match(TokenType.Or)) {
             val operator = consume(TokenType.Or).lexeme
             val right = parseLogicalAnd()
-            left = BinaryExpr(operator, left, right)
+            left = BinaryExpr(left, operator, right)
         }
         return left
     }
@@ -293,7 +347,7 @@ class Parser(private val tokens: List<Token>) {
         while (match(TokenType.And)) {
             val operator = consume(TokenType.And).lexeme
             val right = parseBitwiseOr()
-            left = BinaryExpr(operator, left, right)
+            left = BinaryExpr(left, operator, right)
         }
         return left
     }
@@ -303,7 +357,7 @@ class Parser(private val tokens: List<Token>) {
         while (match(TokenType.Or)) {
             val operator = consume(TokenType.Or).lexeme
             val right = parseBitwiseXor()
-            left = BinaryExpr(operator, left, right)
+            left = BinaryExpr(left, operator, right)
         }
         return left
     }
@@ -313,7 +367,7 @@ class Parser(private val tokens: List<Token>) {
         while (match(TokenType.BitXor)) {
             val operator = consume(TokenType.BitXor).lexeme
             val right = parseBitwiseAnd()
-            left = BinaryExpr(operator, left, right)
+            left = BinaryExpr(left, operator, right)
         }
         return left
     }
@@ -323,7 +377,7 @@ class Parser(private val tokens: List<Token>) {
         while (match(TokenType.BitAnd)) {
             val operator = consume(TokenType.BitAnd).lexeme
             val right = parseEquality()
-            left = BinaryExpr(operator, left, right)
+            left = BinaryExpr(left, operator, right)
         }
         return left
     }
@@ -333,7 +387,7 @@ class Parser(private val tokens: List<Token>) {
         while (match(TokenType.Eq) || match(TokenType.Neq)) {
             val operator = consume().lexeme
             val right = parseComparison()
-            left = BinaryExpr(operator, left, right)
+            left = BinaryExpr(left, operator, right)
         }
         return left
     }
@@ -343,7 +397,7 @@ class Parser(private val tokens: List<Token>) {
         while (match(TokenType.Lt) || match(TokenType.Lte) || match(TokenType.Gt) || match(TokenType.Gte)) {
             val operator = consume().lexeme
             val right = parseShift()
-            left = BinaryExpr(operator, left, right)
+            left = BinaryExpr(left, operator, right)
         }
         return left
     }
@@ -353,7 +407,7 @@ class Parser(private val tokens: List<Token>) {
         while (match(TokenType.LShift) || match(TokenType.RShift)) {
             val operator = consume().lexeme
             val right = parseTerm()
-            left = BinaryExpr(operator, left, right)
+            left = BinaryExpr(left, operator, right)
         }
         return left
     }
@@ -363,7 +417,7 @@ class Parser(private val tokens: List<Token>) {
         while (match(TokenType.Plus) || match(TokenType.Minus)) {
             val operator = consume().lexeme
             val right = parseFactor()
-            left = BinaryExpr(operator, left, right)
+            left = BinaryExpr(left, operator, right)
         }
         return left
     }
@@ -373,7 +427,7 @@ class Parser(private val tokens: List<Token>) {
         while (match(TokenType.Times) || match(TokenType.Divide)) {
             val operator = consume().lexeme
             val right = parseUnary()
-            left = BinaryExpr(operator, left, right)
+            left = BinaryExpr(left, operator, right)
         }
         return left
     }
@@ -426,7 +480,7 @@ class Parser(private val tokens: List<Token>) {
             }
 
             else -> {
-                throw ParserException()
+                throw ParserException(peek(), "No such primary.")
             }
         }
     }

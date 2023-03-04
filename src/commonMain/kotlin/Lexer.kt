@@ -39,7 +39,7 @@ class Lexer(private val source: String) {
     private fun scanToken(): Token? {
         return when (val c = advance()) {
             '+' -> {
-                if (tryConsume('=')) TokenType.PlugAssign()
+                if (tryConsume('=')) TokenType.PlusAssign()
                 else TokenType.Plus()
             }
 

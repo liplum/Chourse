@@ -1,12 +1,8 @@
 package net.liplum.chourse
 
-enum class TokenTypeCat {
-    Assign
-}
 
 enum class TokenType(
     val lexeme: kotlin.String? = null,
-    val cat: TokenTypeCat? = null,
 ) {
     // Keywords
     Fun("fun"), Class("class"), If("if"), Else("else"), While("while"), For("for"), Val("val"), Var("var"),
@@ -19,11 +15,8 @@ enum class TokenType(
     LShift("<<"), RShift(">>"),
 
     // Assignments
-    Assign("=", TokenTypeCat.Assign), PlugAssign("+=", TokenTypeCat.Assign),
-    MinusAssign("-=", TokenTypeCat.Assign), TimesAssign("*=", TokenTypeCat.Assign),
-    DivideAssign("/=", TokenTypeCat.Assign), ModuloAssign("%=", TokenTypeCat.Assign),
-    BitAndAssign("&=", TokenTypeCat.Assign), BitOrAssign("|=", TokenTypeCat.Assign),
-    BitXorAssign("^=", TokenTypeCat.Assign),
+    Assign("="), PlusAssign("+="), MinusAssign("-="), TimesAssign("*="), DivideAssign("/="), ModuloAssign("%="),
+    BitAndAssign("&="), BitOrAssign("|="), BitXorAssign("^="),
 
     // Comparison
     Lt("<"), Gt(">"), Lte("<="), Gte(">="), Eq("=="), Neq("!="),
@@ -35,8 +28,15 @@ enum class TokenType(
 
     // Identifiers and literals
     Identifier, Number, String, Character, Null,
-    NewLine("\n"), Eof
+    NewLine("\n"), Eof;
+
+    companion object {
+        val assigns = listOf(
+            Assign, PlusAssign, MinusAssign, TimesAssign, DivideAssign, BitAndAssign, BitOrAssign, BitXorAssign
+        )
+    }
 }
+
 
 data class Token(
     val type: TokenType,

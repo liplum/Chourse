@@ -2,7 +2,7 @@ package net.liplum.chourse
 
 sealed class Expr
 
-data class BinaryExpr(val operator: String, val left: Expr, val right: Expr) : Expr()
+data class BinaryExpr(val left: Expr, val operator: String, val right: Expr) : Expr()
 data class UnaryExpr(val operator: String, val right: Expr) : Expr()
 data class IntegerLiteral(val value: Int) : Expr()
 data class DoubleLiteral(val value: Double) : Expr()
