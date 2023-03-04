@@ -201,7 +201,7 @@ class Parser(private val tokens: List<Token>) {
             "Expect a ')' after parameters."
         }
         val body = parseBlockStatement()
-        return FunctionDecl(function.lexeme, parameters, body)
+        return FuncDecl(function.lexeme, parameters, body)
     }
 
     private fun parseClassDeclaration(): Stmt {
@@ -255,7 +255,7 @@ class Parser(private val tokens: List<Token>) {
         } else {
             null
         }
-        return VariableDecl(name.lexeme, initializer)
+        return VarDecl(name.lexeme, initializer)
 
     }
 
@@ -277,7 +277,7 @@ class Parser(private val tokens: List<Token>) {
         consume(TokenType.NewLine) {
             "Expect a new line after expression statement."
         }
-        return ExpressionStmt(expression)
+        return ExprStmt(expression)
     }
 
     private fun parseParameters(): List<ParameterDef> {

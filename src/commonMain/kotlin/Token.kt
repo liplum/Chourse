@@ -32,12 +32,6 @@ enum class TokenType(
     // Identifiers and literals
     Identifier, Number, String, Character, Null,
     NewLine("\n"), Eof;
-
-    companion object {
-        val assigns = listOf(
-            Assign, PlusAssign, MinusAssign, TimesAssign, DivideAssign, BitAndAssign, BitOrAssign, BitXorAssign
-        )
-    }
 }
 
 
