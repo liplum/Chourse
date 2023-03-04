@@ -35,9 +35,14 @@ data class VariableDecl(
     val initializer: Expr?
 ) : Stmt
 
+data class ParameterDef(
+    val name: String,
+    val type: String,
+)
+
 data class FunctionDecl(
     val name: String,
-    val parameters: List<String>,
+    val parameters: List<ParameterDef>,
     val body: BlockStmt
 ) : Stmt
 

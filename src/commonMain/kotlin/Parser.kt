@@ -3,6 +3,8 @@ package net.liplum.chourse
 class ParserException(message: String? = null) : Exception(message)
 class Parser(private val tokens: List<Token>) {
     private var current = 0
+    private val currentToken get() = tokens[current]
+    private val restTokens get() = tokens.subList(current, tokens.size)
     private val operatorPrecedence = mapOf(
         "||" to 1, "&&" to 2,
         "|" to 3, "&" to 4,
@@ -29,6 +31,13 @@ class Parser(private val tokens: List<Token>) {
         return false
     }
 
+    private fun match(cat: TokenTypeCat): Boolean {
+        if (check(cat)) {
+            return true
+        }
+        return false
+    }
+
     private fun consume(vararg types: TokenType, msg: (() -> String) = { "" }): Token {
         for (type in types) {
             if (check(type)) {
@@ -39,6 +48,10 @@ class Parser(private val tokens: List<Token>) {
         throw ParserException()
     }
 
+    private fun consume(msg: (() -> String) = { "" }): Token {
+        return advance()
+    }
+
     private fun consume(type: TokenType, msg: (() -> String) = { "" }): Token {
         if (check(type)) {
             return advance()
@@ -47,11 +60,36 @@ class Parser(private val tokens: List<Token>) {
         throw ParserException()
     }
 
+    private fun tryConsume(vararg types: TokenType): Boolean {
+        for (type in types) {
+            if (check(type)) {
+                advance()
+                return true
+            }
+        }
+        return false
+    }
+
+    private fun tryConsume(type: TokenType): Boolean {
+        if (check(type)) {
+            advance()
+            return true
+        }
+        return false
+    }
+
     private fun check(type: TokenType): Boolean {
         if (isAtEnd()) {
             return false
         }
         return peek().type == type
+    }
+
+    private fun check(cat: TokenTypeCat): Boolean {
+        if (isAtEnd()) {
+            return false
+        }
+        return peek().type.cat == cat
     }
 
     private fun advance(): Token {
@@ -95,16 +133,17 @@ class Parser(private val tokens: List<Token>) {
 
     private fun parseStatement(): Stmt? {
         return when {
+            match(TokenType.NewLine) -> {
+                consume(TokenType.NewLine)
+                null
+            }
+
             match(TokenType.Fun) -> parseFunctionDeclaration()
             match(TokenType.Class) -> parseClassDeclaration()
             match(TokenType.If) -> parseIfStatement()
             match(TokenType.While) -> parseWhileStatement()
             match(TokenType.Val, TokenType.Var) -> parseVariableDeclaration()
             match(TokenType.LBrace) -> parseBlockStatement()
-            match(TokenType.NewLine) -> {
-                consume(TokenType.NewLine)
-                null
-            }
             else -> parseExpressionStatement()
         }
     }
@@ -113,7 +152,7 @@ class Parser(private val tokens: List<Token>) {
         consume(TokenType.Fun) {
             "Expect the \"function\" keyword."
         }
-        val functionName = consume(TokenType.Identifier) {
+        val function = consume(TokenType.Identifier) {
             "Expect a function name."
         }
         consume(TokenType.LParen) {
@@ -124,7 +163,7 @@ class Parser(private val tokens: List<Token>) {
             "Expect a ')' after parameters."
         }
         val body = parseBlockStatement()
-        return FunctionDecl(functionName.lexeme, parameters, body)
+        return FunctionDecl(function.lexeme, parameters, body)
     }
 
     private fun parseClassDeclaration(): Stmt {
@@ -147,7 +186,7 @@ class Parser(private val tokens: List<Token>) {
         val condition = parseExpression()
         consume(TokenType.RParen)
         val thenBranch = parseStatement()!!
-        val elseBranch = if (match(TokenType.Else)) {
+        val elseBranch = if (tryConsume(TokenType.Else)) {
             parseStatement()
         } else {
             null
@@ -201,14 +240,22 @@ class Parser(private val tokens: List<Token>) {
         return ExpressionStmt(expression)
     }
 
-    private fun parseParameters(): List<String> {
-        val parameters = mutableListOf<String>()
+    private fun parseParameters(): List<ParameterDef> {
+        val parameters = mutableListOf<ParameterDef>()
         if (!match(TokenType.RParen)) {
-            parameters.add(consume(TokenType.Identifier).lexeme)
-            while (match(TokenType.Comma)) {
-                consume(TokenType.Comma)
-                parameters.add(consume(TokenType.Identifier).lexeme)
-            }
+            do {
+                val param = consume(TokenType.Identifier) {
+                    "Expect a parameter name."
+                }
+                consume(TokenType.Colon) {
+                    "Expect ':' between a parameter and its type."
+                }
+                // TODO: Resolve the type
+                val type = consume(TokenType.Identifier) {
+                    "Expect a type."
+                }
+                parameters.add(ParameterDef(param.lexeme, type.lexeme))
+            } while (tryConsume(TokenType.Comma))
         }
         return parameters
     }
@@ -219,8 +266,8 @@ class Parser(private val tokens: List<Token>) {
 
     private fun parseAssignment(): Expr {
         val left = parseLogicalOr()
-        if (match(TokenType.Assign)) {
-            consume(TokenType.Assign)
+        if (match(TokenTypeCat.Assign)) {
+            consume()
             val right = parseAssignment()
             return if (left is VariableExpr) {
                 AssignmentExpr(left.name, right)
@@ -394,11 +441,10 @@ class Parser(private val tokens: List<Token>) {
     private fun parseArgumentList(): List<Expr> {
         val arguments = mutableListOf<Expr>()
         if (!match(TokenType.RParen)) {
-            arguments.add(parseExpression())
-            while (match(TokenType.Comma)) {
-                consume(TokenType.Comma)
-                arguments.add(parseExpression())
-            }
+            do {
+                val arg = parseExpression()
+                arguments.add(arg)
+            } while (tryConsume(TokenType.Comma))
         }
         return arguments
     }

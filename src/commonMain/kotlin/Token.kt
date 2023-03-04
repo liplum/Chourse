@@ -1,7 +1,12 @@
 package net.liplum.chourse
 
+enum class TokenTypeCat {
+    Assign
+}
+
 enum class TokenType(
-    val lexeme: kotlin.String? = null
+    val lexeme: kotlin.String? = null,
+    val cat: TokenTypeCat? = null,
 ) {
     // Keywords
     Fun("fun"), Class("class"), If("if"), Else("else"), While("while"), For("for"), Val("val"), Var("var"),
@@ -14,8 +19,11 @@ enum class TokenType(
     LShift("<<"), RShift(">>"),
 
     // Assignments
-    Assign("="), PlugAssign("+="), MinusAssign("-="), TimesAssign("*="), DivideAssign("/="), ModuloAssign("%="),
-    BitAndAssign("&="), BitOrAssign("|="), BitXorAssign("^="),
+    Assign("=", TokenTypeCat.Assign), PlugAssign("+=", TokenTypeCat.Assign),
+    MinusAssign("-=", TokenTypeCat.Assign), TimesAssign("*=", TokenTypeCat.Assign),
+    DivideAssign("/=", TokenTypeCat.Assign), ModuloAssign("%=", TokenTypeCat.Assign),
+    BitAndAssign("&=", TokenTypeCat.Assign), BitOrAssign("|=", TokenTypeCat.Assign),
+    BitXorAssign("^=", TokenTypeCat.Assign),
 
     // Comparison
     Lt("<"), Gt(">"), Lte("<="), Gte(">="), Eq("=="), Neq("!="),
