@@ -39,64 +39,67 @@ class Lexer(private val source: String) {
     private fun scanToken(): Token? {
         return when (val c = advance()) {
             '+' -> {
-                if (ifNext('=')) TokenType.PlugAssign()
+                if (tryConsume('=')) TokenType.PlugAssign()
                 else TokenType.Plus()
             }
 
             '-' -> {
-                if (ifNext('=')) TokenType.MinusAssign()
+                if (tryConsume('=')) TokenType.MinusAssign()
                 else TokenType.Minus()
             }
 
             '*' -> {
-                if (ifNext('=')) TokenType.TimesAssign()
+                if (tryConsume('=')) TokenType.TimesAssign()
                 else TokenType.Times()
             }
 
             '/' -> {
-                if (ifNext('=')) TokenType.DivideAssign()
+                if (tryConsume('/')) {
+                    skipComment()
+                    null
+                } else if (tryConsume('=')) TokenType.DivideAssign()
                 else TokenType.Divide()
             }
 
             '%' -> {
-                if (ifNext('=')) TokenType.ModuloAssign()
+                if (tryConsume('=')) TokenType.ModuloAssign()
                 else TokenType.Modulo()
             }
 
             '&' -> {
-                if (ifNext('&')) TokenType.And()
-                else if (ifNext('=')) TokenType.BitAndAssign()
+                if (tryConsume('&')) TokenType.And()
+                else if (tryConsume('=')) TokenType.BitAndAssign()
                 else TokenType.BitAnd()
             }
 
             '|' -> {
-                if (ifNext('|')) TokenType.Or()
-                else if (ifNext('=')) TokenType.BitOrAssign()
+                if (tryConsume('|')) TokenType.Or()
+                else if (tryConsume('=')) TokenType.BitOrAssign()
                 else TokenType.BitOr()
             }
 
             '^' -> {
-                if (ifNext('=')) TokenType.BitXorAssign()
+                if (tryConsume('=')) TokenType.BitXorAssign()
                 else TokenType.BitXor()
             }
 
             '=' -> {
-                if (ifNext('=')) TokenType.Eq()
+                if (tryConsume('=')) TokenType.Eq()
                 else TokenType.Assign()
             }
 
             '!' -> {
-                if (ifNext('=')) TokenType.Neq()
+                if (tryConsume('=')) TokenType.Neq()
                 else TokenType.Not()
             }
 
             '<' -> {
-                if (ifNext('=')) TokenType.Lte()
+                if (tryConsume('=')) TokenType.Lte()
                 else TokenType.Lt()
             }
 
             '>' -> {
-                if (ifNext('=')) TokenType.Gte()
+                if (tryConsume('=')) TokenType.Gte()
                 else TokenType.Gt()
             }
 
@@ -145,6 +148,12 @@ class Lexer(private val source: String) {
         return type(lexeme)
     }
 
+    private fun skipComment() {
+        while (!tryConsume('\n')) {
+            advance()
+        }
+        line++
+    }
 
     private fun string(): Token? {
         while (peek() != '"' && !isAtEnd()) {
@@ -181,7 +190,7 @@ class Lexer(private val source: String) {
         else source[current + 1]
     }
 
-    private fun ifNext(expected: Char): Boolean {
+    private fun tryConsume(expected: Char): Boolean {
         if (isAtEnd() || peek() != expected) {
             return false
         }

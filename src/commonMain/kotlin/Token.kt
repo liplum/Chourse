@@ -11,6 +11,7 @@ enum class TokenType(
 
     // Bitwise
     BitAnd("&"), BitOr("|"), BitXor("^"),
+    LShift("<<"), RShift(">>"),
 
     // Assignments
     Assign("="), PlugAssign("+="), MinusAssign("-="), TimesAssign("*="), DivideAssign("/="), ModuloAssign("%="),
@@ -25,8 +26,8 @@ enum class TokenType(
     Not("!"), And("&&"), Or("||"),
 
     // Identifiers and literals
-    Identifier, Number, String, Character,
-    NewLine("\n"), Eof;
+    Identifier, Number, String, Character, Null,
+    NewLine("\n"), Eof
 }
 
 data class Token(
