@@ -5,8 +5,7 @@ class ParserException(message: String?) : Exception(message) {
         if (token.type == TokenType.Eof) {
             "[line ${token.line}] Error at end: $message"
         } else {
-            val lexeme = if (token.lexeme == "\n") "\\n" else token.lexeme
-            "[line ${token.line}] Error at \"${lexeme}\": $message"
+            "[line ${token.line}] Error at \"${token.lexeme}\": $message"
         }
     )
 }
@@ -90,14 +89,6 @@ class Parser(private val tokens: List<Token>) {
         throw ParserException(peek(), msg())
     }
 
-    private fun consume(types: List<TokenType>, msg: (() -> String) = { "" }): Token {
-        for (type in types) {
-            if (check(type)) {
-                return advance()
-            }
-        }
-        throw ParserException(peek(), msg())
-    }
 
     private fun consume(errorMessage: (() -> String) = { "" }): Token {
         val next = advance()
@@ -114,22 +105,20 @@ class Parser(private val tokens: List<Token>) {
         throw ParserException(peek(), errorMessage())
     }
 
-    private fun tryConsume(vararg types: TokenType): Boolean {
+    private fun tryConsume(vararg types: TokenType): Token? {
         for (type in types) {
             if (check(type)) {
-                advance()
-                return true
+                return advance()
             }
         }
-        return false
+        return null
     }
 
-    private fun tryConsume(type: TokenType): Boolean {
+    private fun tryConsume(type: TokenType): Token? {
         if (check(type)) {
-            advance()
-            return true
+            return advance()
         }
-        return false
+        return null
     }
 
     private fun check(type: TokenType): Boolean {
@@ -182,8 +171,56 @@ class Parser(private val tokens: List<Token>) {
             match(TokenType.While) -> parseWhileStatement()
             match(TokenType.Val, TokenType.Var) -> parseVariableDeclaration()
             match(TokenType.LBrace) -> parseBlockStatement()
+            match(TokenType.Return) -> parseReturn()
+            match(TokenType.Break) -> parseBreak()
+            match(TokenType.Continue) -> parseContinue()
             else -> parseExpressionStatement()
         }
+    }
+
+    private fun parseReturn(): Stmt {
+        consume(TokenType.Return) {
+            "Expect the \"return\" keyword."
+        }
+        val returnValue = if (match(TokenType.NewLine)) null
+        else parseExpression()
+        consume(TokenType.NewLine) {
+            if (returnValue == null)
+                "Expect newline after \"return\" keyword."
+            else
+                "Expect newline after return value."
+        }
+        return ReturnStmt(returnValue)
+    }
+
+    private fun parseBreak(): Stmt {
+        consume(TokenType.Break) {
+            "Expect the \"break\" keyword."
+        }
+        val label = if (match(TokenType.NewLine)) tryConsume(TokenType.Label)
+        else null
+        consume(TokenType.NewLine) {
+            if (label == null)
+                "Expect newline after \"break\" keyword."
+            else
+                "Expect newline after break value."
+        }
+        return BreakStmt(label?.lexeme)
+    }
+
+    private fun parseContinue(): Stmt {
+        consume(TokenType.Continue) {
+            "Expect the \"continue\" keyword."
+        }
+        val label = if (match(TokenType.NewLine)) tryConsume(TokenType.Label)
+        else null
+        consume(TokenType.NewLine) {
+            if (label == null)
+                "Expect newline after \"continue\" keyword."
+            else
+                "Expect newline after continue value."
+        }
+        return ContinueStmt(label?.lexeme)
     }
 
     private fun parseFunctionDeclaration(): Stmt {
@@ -224,7 +261,7 @@ class Parser(private val tokens: List<Token>) {
         val condition = parseExpression()
         consume(TokenType.RParen)
         val thenBranch = parseStatement()!!
-        val elseBranch = if (tryConsume(TokenType.Else)) {
+        val elseBranch = if (tryConsume(TokenType.Else) != null) {
             parseStatement()
         } else {
             null
@@ -295,7 +332,7 @@ class Parser(private val tokens: List<Token>) {
                     "Expect a type."
                 }
                 parameters.add(ParameterDef(param.lexeme, type.lexeme))
-            } while (tryConsume(TokenType.Comma))
+            } while (tryConsume(TokenType.Comma) != null)
         }
         return parameters
     }
@@ -388,7 +425,7 @@ class Parser(private val tokens: List<Token>) {
             do {
                 val arg = parseExpression()
                 arguments.add(arg)
-            } while (tryConsume(TokenType.Comma))
+            } while (tryConsume(TokenType.Comma) != null)
         }
         return arguments
     }

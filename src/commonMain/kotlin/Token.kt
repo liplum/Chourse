@@ -6,7 +6,8 @@ enum class TokenType(
 ) {
     // Keywords
     Fun("fun"), Class("class"), If("if"), Else("else"), While("while"), For("for"), Val("val"), Var("var"),
-
+    /// Clause
+    Return("return"), Break("break"), Continue("continue"),
     // Operators
     Plus("+"), Minus("-"), Times("*"), Divide("/"), Modulo("%"),
 
@@ -30,8 +31,8 @@ enum class TokenType(
     Not("!"), And("&&"), Or("||"),
 
     // Identifiers and literals
-    Identifier, Number, String, Character, Null,
-    NewLine("\n"), Eof;
+    Identifier, Number, String, Character, Null, Label,
+    NewLine("\\n"), Eof;
 }
 
 
@@ -40,13 +41,8 @@ data class Token(
     val lexeme: String,
     val line: Int
 ) {
-    override fun toString(): String {
-        val lexeme = when (this.lexeme) {
-            "\n" -> "\\n"
-            else -> this.lexeme
-        }
-        return "[$type-$line]\"$lexeme\""
-    }
+    override fun toString(): String =
+        "[$type-$line]\"${this.lexeme}\""
 }
 
 fun List<Token>.antiLexer(): String {

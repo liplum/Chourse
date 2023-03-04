@@ -111,18 +111,10 @@ class ToSourceVisitor(
 
     override fun visitContinue(stmt: ContinueStmt) {
         builder.append("continue")
-        if (stmt.label != null) {
-            builder.append(' ')
-            builder.append(stmt.label)
-        }
     }
 
     override fun visitBreak(stmt: BreakStmt) {
         builder.append("break")
-        if (stmt.label != null) {
-            builder.append(' ')
-            builder.append(stmt.label)
-        }
     }
 
     override fun visitReturn(stmt: ReturnStmt) {

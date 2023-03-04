@@ -9,7 +9,11 @@ val keywords = mapOf(
     "for" to TokenType.For,
     "val" to TokenType.Val,
     "var" to TokenType.Var,
+    "return" to TokenType.Return,
+    "break" to TokenType.Break,
+    "continue" to TokenType.Continue,
 )
+fun Char.isValidIdentifier() = isLetterOrDigit() || this == '_'
 
 class Lexer(private val source: String) {
     private var start = 0
@@ -125,6 +129,7 @@ class Lexer(private val source: String) {
             ',' -> TokenType.Comma()
             ':' -> TokenType.Colon()
             '.' -> TokenType.Dot()
+            '@' -> label()
             in '0'..'9' -> number()
             in 'a'..'z', in 'A'..'Z', '_' -> identifier()
             '"' -> string()
@@ -155,7 +160,17 @@ class Lexer(private val source: String) {
     }
 
     private fun identifier(): Token {
-        while (peek().isLetterOrDigit() || peek() == '_') {
+        while (peek().isValidIdentifier()) {
+            advance()
+        }
+        val lexeme = source.substring(start, current)
+        val type = keywords[lexeme] ?: TokenType.Identifier
+        return type(lexeme)
+    }
+
+    private fun label(): Token {
+        tryConsume('@')
+        while (peek().isValidIdentifier()) {
             advance()
         }
         val lexeme = source.substring(start, current)
@@ -213,3 +228,4 @@ class Lexer(private val source: String) {
         return true
     }
 }
+
